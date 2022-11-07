@@ -44,6 +44,27 @@
     <div class="wrapper">
       <div class="content" role="main">
         <h1 class="title">Welcome to PetPicker</h1>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+          {% if category == 'error' %}
+          <div class="alert alert-danger alert-dismissable fade show" role="alert">
+            {{message}}
+            <button type="button" class="close" data-dismiss="alert">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          {% else %}
+          <div class="alert alert-success alert-dismissable fade show" role="alert">
+            {{message}}
+            <button type="button" class="close" data-dismiss="alert">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          {% endif %}
+          {% endfor %}
+        {% endif %}
+        {% endwith %}
         <div class="instructions">
           <h2></h2>
           <label for="fname">Username:</label>
@@ -52,8 +73,8 @@
           <input type="password" id="pwd" name="pwd" />
         </div>
         <div>
-          <button type="button">Log In</button>
-          <button type="button">Create Account</button>
+          <button type="submit">Log In</button>
+          <button type="submit">Create Account</button>
         </div>
       </div>
       <div>
