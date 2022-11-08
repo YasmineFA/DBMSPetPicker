@@ -17,7 +17,7 @@ app = create_app()
 #       return redirect(url_for('index'))
 
 # @app.route('/signup',methods = ['POST', 'GET'])
-# def login():
+# def signup():
 #    if request.method == 'POST':
 #       user = request.form['fname']
 #       pwd = request.form['pwd']
