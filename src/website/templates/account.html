@@ -37,7 +37,7 @@
         </div>
         <div>
           <p>
-            Welcome (username here)!
+            Welcome {{username}}!
           </p>
         </div>
         <div>
@@ -45,11 +45,9 @@
             <h2>
               Saved search queries:
             </h2>
-          Search Result 1 <br>
-          Search Result 2 <br>
-          Search Result 3 <br>
-          Search Result 4 <br>
-          Search Result 5
+            {% for search in searches %}
+              {{search}} <br>
+            {% endfor %}
           </p>
         </div>
       </div>
