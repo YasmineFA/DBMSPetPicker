@@ -51,6 +51,30 @@ def account(user):
 def results(query):
    return render_template('results.html')
 
+@app.route('/search', methods = ['POST', 'GET'])
+def search():
+   state = searchOptions("orgs", "state")
+   species = searchOptions("attributes", "species") # not in our ER diagram (what was diff between species and breed again?)
+   age = searchOptions("attributes", "age")
+   gender = searchOptions("attributes", "gender")
+   size = searchOptions("attributes", "size")
+   env = getColNames("environment")
+
+   if request.method == 'POST':
+      # dont use default value of search
+      search = request.form["searchbar"]
+      if(search == "pet name" or search == ""):
+         flash("Please enter a search query", category="error")
+         return render_template('search.html', locations=state, species=species, ages=age, genders=gender, sizes=size, environments=env)
+      
+      # create a sql statement with all the things selected
+      # get values of selections
+      # state, species, age, gender, size, attributes select where those cols = value
+      # env select where col = True
+   else:
+
+      return render_template('search.html', locations=state, species=species, ages=age, genders=gender, sizes=size, environments=env)
+
 @app.route('/logout')
 def logout():
     session.pop('loggedin', None)
@@ -59,6 +83,7 @@ def logout():
     return redirect(url_for('index'))
 
 def connectDB():
+   # this is just my local connection for mysql workbench atm
    conn = mysql.connector.connect(
          host="localhost",
          user="root",
@@ -114,9 +139,26 @@ def getSavedSearches(user):
    conn = connectDB()
    cur = conn.cursor()
    cur.execute("SELECT searchQuery FROM user WHERE username= % s", (user))
-   searches = cur.fetchone()
+   searches = cur.fetchall()
    queryList = searches.split(', ')
    return queryList 
+
+def searchOptions(table, column):
+   conn = connectDB()
+   cur = conn.cursor()
+   cur.execute("SELECT % s FROM % s", (column, table))
+   result = cur.fetchall() #get rid of duplicates 
+   resultList = result.split(', ')
+   return resultList
+
+def getColNames(table):
+   conn = connectDB()
+   cur = conn.cursor()
+   cur.execute("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = % s;", (table))
+   cols = cur.fetchall()
+   colList = cols.split(', ')
+   return colList
+   
 
 if __name__ == '__main__':
    app.run(debug=True)
