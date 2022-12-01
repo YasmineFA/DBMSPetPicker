@@ -31,9 +31,11 @@
       <div class="content" role="main">
         <h1 class="title">Accounts page</h1>
         <div>
-          <label for="fname">Search:</label>
-          <input type="text" id="fname" name="fname" />
-          <button>Logout</button>
+          <form action="/form/submit" method="GET">
+  <input type="text" name="text" class="search" placeholder="Search here!">
+  <input type="submit" name="submit" class="submit" value="Search">
+</form>
+          <form><button>Logout</button></form>
         </div>
         <div>
           <p>
