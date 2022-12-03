@@ -3,11 +3,17 @@ from flask import Flask, render_template, redirect, url_for, request, flash, ses
 from flask_mysqldb import MySQL
 
 app = Flask(__name__, template_folder='templates')
-# app.config['SECRET_KEY'] = 'CS542Team1'
+#app.config['SECRET_KEY'] = 'CS542Team1'
 # app.config['MYSQL_HOST'] = 'localhost'
 # app.config['MYSQL_USER'] = #'pfadmin@petfinderdb'
 # app.config['MYSQL_PASSWORD'] = 'pfapi2022!'
 # app.config['MYSQL_DB'] = 'guest'
+
+# TODO: my local connection, will need to be changed
+app.config['MYSQL_HOST'] = 'localhost'
+app.config['MYSQL_USER'] = 'yfaoua'
+app.config['MYSQL_PASSWORD'] = 'root'
+app.config['MYSQL_DB'] = 'petfinderDB'
 
 mysql = MySQL(app)
 
@@ -83,20 +89,22 @@ def logout():
     session.pop('username', None)
     return redirect(url_for('index'))
 
-def connectDB():
-   # this is just my local connection for mysql workbench atm
-   conn = mysql.connector.connect(
-         host="localhost",
-         user="root",
-         password="root",
-         database="petfinderDB"
-         )
-   return conn
+# def connectDB():
+#    # this is just my local connection for mysql workbench atm
+#    # conn = mysql.connect(
+#    #       host="localhost",
+#    #       user="yfaoua",
+#    #       password="root",
+#    #       database="petfinderDB"
+#    #       )
+#    conn = mysql.connection
+#    return conn
 
 def auth_login(user, pwd):
-   conn = connectDB()
+   # conn = connectDB()
+   conn = mysql.connection
    cur = conn.cursor()
-   cur.execute("SELECT * FROM users WHERE username = % s AND password = % s", (user, pwd))
+   cur.execute("SELECT * FROM users WHERE username = % s AND pwd = % s;", (user, pwd))
    account = cur.fetchone()
    if account:
       session['loggedin'] = True
@@ -116,13 +124,14 @@ def sign_up(user, pwd):
       flash("Password is too short", category='error')
       return False
    # check username isn't taken
-   conn = connectDB()
+   # conn = connectDB()
+   conn = mysql.connection
    cur = conn.cursor()
-   cur.execute("SELECT * FROM user WHERE username = % s AND password = % s", (user, pwd))
+   cur.execute("SELECT * FROM user WHERE username = % s AND pwd = % s;", (user, pwd))
    accExists = cur.fetchone()
    if(accExists==None):
       # add account info into users table
-      cur.execute("INSERT INTO user WHERE username = % s AND password = % s", (user, pwd))
+      cur.execute("INSERT INTO user (username, pwd) VALUES (% s, % s);", (user, pwd))
       conn.commit()
       session['loggedin'] = True
       session['id'] = account['id']
@@ -137,17 +146,19 @@ def sign_up(user, pwd):
       return False
 
 def getSavedSearches(user):
-   conn = connectDB()
+   # conn = connectDB()
+   conn = mysql.connection
    cur = conn.cursor()
-   cur.execute("SELECT searchQuery FROM user WHERE username= % s", (user))
+   cur.execute("SELECT searchQuery FROM user WHERE username= % s;", (user))
    searches = cur.fetchall()
    queryList = searches.split(', ')
    return queryList 
 
 def searchOptions(table, column):
-   conn = connectDB()
+   # conn = connectDB()
+   conn = mysql.connection
    cur = conn.cursor()
-   cur.execute("SELECT % s FROM % s", (column, table))
+   cur.execute("SELECT % s FROM % s;", (column, table))
    result = cur.fetchall() 
    #get rid of duplicates 
    resultList = []
@@ -157,7 +168,8 @@ def searchOptions(table, column):
    return resultList
 
 def getColNames(table):
-   conn = connectDB()
+   # conn = connectDB()
+   conn = mysql.connection
    cur = conn.cursor()
    cur.execute("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = % s;", (table))
    cols = cur.fetchall()
