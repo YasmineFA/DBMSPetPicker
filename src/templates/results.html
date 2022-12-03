@@ -30,13 +30,15 @@
     <div class="wrapper">
       <div>
         <span>Search Results Page</span>
-        <label for="fname">Search:</label>
-        <input type="text" id="fname" name="fname" />
+        <form action="/form/submit" method="GET">
+  <input type="text" name="text" class="search" placeholder="Search here!">
+  <input type="submit" name="submit" class="submit" value="Search">
+</form>
       </div>
       <div>
         <span>Query: search goes here</span>
         <button>Save Query</button>
-        <button onclick=logout()>Logout</button>
+        <form><button onclick="window.location.href='index.html';">Logout</button></form>
       </div>
       <div>
         <img src="Cat.jpg">
