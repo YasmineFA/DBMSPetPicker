@@ -2,7 +2,7 @@
 from flask import Flask, render_template, redirect, url_for, request, flash, session
 from flask_mysqldb import MySQL
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='templates')
 # app.config['SECRET_KEY'] = 'CS542Team1'
 # app.config['MYSQL_HOST'] = 'localhost'
 # app.config['MYSQL_USER'] = #'pfadmin@petfinderdb'
@@ -71,6 +71,7 @@ def search():
       # get values of selections
       # state, species, age, gender, size, attributes select where those cols = value
       # env select where col = True
+
    else:
 
       return render_template('search.html', locations=state, species=species, ages=age, genders=gender, sizes=size, environments=env)
@@ -147,8 +148,12 @@ def searchOptions(table, column):
    conn = connectDB()
    cur = conn.cursor()
    cur.execute("SELECT % s FROM % s", (column, table))
-   result = cur.fetchall() #get rid of duplicates 
-   resultList = result.split(', ')
+   result = cur.fetchall() 
+   #get rid of duplicates 
+   resultList = []
+   for entry in result:
+      if entry not in resultList:
+         resultList.append(entry)
    return resultList
 
 def getColNames(table):
