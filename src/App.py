@@ -10,6 +10,7 @@ app = Flask(__name__, template_folder='templates')
 # app.config['MYSQL_DB'] = 'guest'
 
 # TODO: my local connection, will need to be changed
+app.config['SECRET_KEY'] = 'CS542Team1'
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'yfaoua'
 app.config['MYSQL_PASSWORD'] = 'root'
@@ -33,6 +34,8 @@ def login():
          if(auth_login(user, pwd)):
             return redirect(url_for('account',user = user))
          else:
+            # TODO: (Chris) figure out how to make the exit button clickable on the flash message
+            # should be able to just do it in one place and have it work for them all
             flash("Incorrect login, please try again", category='error')
             return redirect(url_for('index'))
 
@@ -55,10 +58,13 @@ def account(user):
 
 @app.route("/results/<query>", methods=['POST'])
 def results(query):
+   # TODO: finish writing this
+   # TODO: (Chris) need to finish changes to html
    return render_template('results.html')
 
 @app.route('/search', methods = ['POST', 'GET'])
 def search():
+   # TODO: add flash message to html file so they actually display
    state = searchOptions("orgs", "state")
    species = searchOptions("attributes", "species") # not in our ER diagram (what was diff between species and breed again?)
    age = searchOptions("attributes", "age")
@@ -85,7 +91,6 @@ def search():
 @app.route('/logout')
 def logout():
     session.pop('loggedin', None)
-    session.pop('id', None)
     session.pop('username', None)
     return redirect(url_for('index'))
 
@@ -104,12 +109,12 @@ def auth_login(user, pwd):
    # conn = connectDB()
    conn = mysql.connection
    cur = conn.cursor()
-   cur.execute("SELECT * FROM users WHERE username = % s AND pwd = % s;", (user, pwd))
+   cur.execute("SELECT * FROM user WHERE username = % s AND pwd = % s;", (user, pwd))
    account = cur.fetchone()
+   print(account)
    if account:
       session['loggedin'] = True
-      session['id'] = account['id']
-      session['username'] = account['username']
+      session['username'] = account[0] # first element in tuple is username
       cur.close()
       conn.close()
       return True
@@ -134,8 +139,7 @@ def sign_up(user, pwd):
       cur.execute("INSERT INTO user (username, pwd) VALUES (% s, % s);", (user, pwd))
       conn.commit()
       session['loggedin'] = True
-      session['id'] = account['id']
-      session['username'] = account['username']
+      session['username'] = account[0] # first element in tuple is username
       cur.close()
       conn.close()
       return True
@@ -149,9 +153,9 @@ def getSavedSearches(user):
    # conn = connectDB()
    conn = mysql.connection
    cur = conn.cursor()
-   cur.execute("SELECT searchQuery FROM user WHERE username= % s;", (user))
-   searches = cur.fetchall()
-   queryList = searches.split(', ')
+   cur.execute("SELECT searchQuery FROM user WHERE username = '{0}';".format(user))
+   searches = cur.fetchone() # TODO: once we have queries, check if we need fetchall
+   queryList = list(searches)
    return queryList 
 
 def searchOptions(table, column):
