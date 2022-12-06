@@ -1,13 +1,16 @@
 # from website import create_app
 from flask import Flask, render_template, redirect, url_for, request, flash, session
 from flask_mysqldb import MySQL
+import re
 
 app = Flask(__name__, template_folder='templates')
-#app.config['SECRET_KEY'] = 'CS542Team1'
-# app.config['MYSQL_HOST'] = 'localhost'
-# app.config['MYSQL_USER'] = #'pfadmin@petfinderdb'
+# app.config['SECRET_KEY'] = 'CS542Team1'
+# app.config['MYSQL_USER'] = 'pfuser'
 # app.config['MYSQL_PASSWORD'] = 'pfapi2022!'
-# app.config['MYSQL_DB'] = 'guest'
+# app.config['MYSQL_DB'] = 'petfinderdb'
+# app.config['MYSQL_HOST'] = '34.68.9.43'
+
+# host: 34.68.9.43
 
 # TODO: my local connection, will need to be changed
 app.config['SECRET_KEY'] = 'CS542Team1'
@@ -110,11 +113,10 @@ def auth_login(user, pwd):
    conn = mysql.connection
    cur = conn.cursor()
    cur.execute("SELECT * FROM user WHERE username = % s AND pwd = % s;", (user, pwd))
-   account = cur.fetchone()
-   print(account)
-   if account:
+   accounts = cur.fetchone()
+   if accounts:
       session['loggedin'] = True
-      session['username'] = account[0] # first element in tuple is username
+      session['username'] = accounts[0] # first element in tuple is username
       cur.close()
       conn.close()
       return True
@@ -139,7 +141,7 @@ def sign_up(user, pwd):
       cur.execute("INSERT INTO user (username, pwd) VALUES (% s, % s);", (user, pwd))
       conn.commit()
       session['loggedin'] = True
-      session['username'] = account[0] # first element in tuple is username
+      session['username'] = user
       cur.close()
       conn.close()
       return True
@@ -162,12 +164,14 @@ def searchOptions(table, column):
    # conn = connectDB()
    conn = mysql.connection
    cur = conn.cursor()
-   cur.execute("SELECT % s FROM % s;", (column, table))
+   cur.execute("SELECT {0} FROM {1};".format(column, table))
    result = cur.fetchall() 
    #get rid of duplicates 
+   
    resultList = []
    for entry in result:
       if entry not in resultList:
+         re.sub('[^a-zA-Z]+', '', str(entry))
          resultList.append(entry)
    return resultList
 
@@ -175,9 +179,11 @@ def getColNames(table):
    # conn = connectDB()
    conn = mysql.connection
    cur = conn.cursor()
-   cur.execute("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = % s;", (table))
-   cols = cur.fetchall()
-   colList = cols.split(', ')
+   query = "SELECT CONCAT('\'', GROUP_CONCAT(column_name ORDER BY ordinal_position SEPARATOR '\', \''),'\'') AS columns FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = '" + table + "';"
+   # print(query)
+   cur.execute(query)
+   cols = cur.fetchone()
+   colList = cols[0].split(', ')
    return colList
    
 
