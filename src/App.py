@@ -59,10 +59,25 @@ def account(user):
    queryList = getSavedSearches(user)
    return render_template('account.html', username=user, searches=queryList)
 
-@app.route("/results/<query>", methods=['POST'])
-def results(query):
+@app.route("/results", methods=['POST'])
+def results():
    # TODO: finish writing this
    # TODO: (Chris) need to finish changes to html
+   if request.method == 'POST':
+      petName = ""
+      state = ""
+      species = ""
+      age = ""
+      gender = ""
+      size = ""
+      environment = ""
+      attributes = ""
+      if(request.form['searchbar'] == None or request.form['searchbar'] == "pet name"):
+         flash("nothing to search (please enter a non-default search query)", category='error')
+         return redirect(url_for('search'))
+
+      state = request.form.get('location-select')
+      species = request.form.get('species-select')
    return render_template('results.html')
 
 @app.route('/search', methods = ['POST', 'GET'])
@@ -158,6 +173,7 @@ def getSavedSearches(user):
    cur.execute("SELECT searchQuery FROM user WHERE username = '{0}';".format(user))
    searches = cur.fetchone() # TODO: once we have queries, check if we need fetchall
    queryList = list(searches)
+   cur.close()
    return queryList 
 
 def searchOptions(table, column):
@@ -170,10 +186,11 @@ def searchOptions(table, column):
    
    resultList = []
    for entry in result:
-      if entry not in resultList:
-         re.sub('[^a-zA-Z]+', '', str(entry))
-         resultList.append(entry)
-   return resultList
+      opt = ''.join(map(str, entry))
+      if opt not in resultList:
+         resultList.append(opt)
+   cur.close()
+   return sorted(resultList)
 
 def getColNames(table):
    # conn = connectDB()
@@ -183,7 +200,8 @@ def getColNames(table):
    # print(query)
    cur.execute(query)
    cols = cur.fetchone()
-   colList = str(cols[0]).split(', ')
+   colList = cols[0].split(', ')
+   cur.close()
    return colList
    
 
