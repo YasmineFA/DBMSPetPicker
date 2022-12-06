@@ -4,20 +4,20 @@ from flask_mysqldb import MySQL
 import re
 
 app = Flask(__name__, template_folder='templates')
-# app.config['SECRET_KEY'] = 'CS542Team1'
-# app.config['MYSQL_USER'] = 'pfuser'
-# app.config['MYSQL_PASSWORD'] = 'pfapi2022!'
-# app.config['MYSQL_DB'] = 'petfinderdb'
-# app.config['MYSQL_HOST'] = '34.68.9.43'
+app.config['SECRET_KEY'] = 'CS542Team1'
+app.config['MYSQL_USER'] = 'pfuser'
+app.config['MYSQL_PASSWORD'] = 'pfapi2022!'
+app.config['MYSQL_DB'] = 'petfinderdb'
+app.config['MYSQL_HOST'] = '34.68.9.43'
 
 # host: 34.68.9.43
 
 # TODO: my local connection, will need to be changed
-app.config['SECRET_KEY'] = 'CS542Team1'
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'yfaoua'
-app.config['MYSQL_PASSWORD'] = 'root'
-app.config['MYSQL_DB'] = 'petfinderDB'
+# app.config['SECRET_KEY'] = 'CS542Team1'
+# app.config['MYSQL_HOST'] = 'localhost'
+# app.config['MYSQL_USER'] = 'yfaoua'
+# app.config['MYSQL_PASSWORD'] = 'root'
+# app.config['MYSQL_DB'] = 'petfinderDB'
 
 mysql = MySQL(app)
 
