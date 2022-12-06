@@ -64,20 +64,20 @@ def results():
    # TODO: finish writing this
    # TODO: (Chris) need to finish changes to html
    if request.method == 'POST':
-      petName = ""
-      state = ""
-      species = ""
-      age = ""
-      gender = ""
-      size = ""
-      environment = ""
-      attributes = ""
       if(request.form['searchbar'] == None or request.form['searchbar'] == "pet name"):
          flash("nothing to search (please enter a non-default search query)", category='error')
          return redirect(url_for('search'))
-
+      
+      petName = request.form['searchbar']
       state = request.form.get('location-select')
       species = request.form.get('species-select')
+      age = request.form.get('age-select')
+      gender = request.form.get('gender-select')
+      size = request.form.get('size-select')
+      environment = request.form.get('environment-select')
+      attributes = request.form.get('attributes-select')
+      results = searchResults(petName, state, species, age, gender, size, environment, attributes)
+
    return render_template('results.html')
 
 @app.route('/search', methods = ['POST', 'GET'])
@@ -200,9 +200,13 @@ def getColNames(table):
    # print(query)
    cur.execute(query)
    cols = cur.fetchone()
-   colList = cols[0].split(', ')
+   colList = cols[0].split(', ')[1:]
    cur.close()
    return colList
+
+def searchResults(petName, state, species, age, gender, size, environment, attributes):
+   
+   pass
    
 
 if __name__ == '__main__':
