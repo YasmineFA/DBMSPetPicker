@@ -179,11 +179,11 @@ def getColNames(table):
    # conn = connectDB()
    conn = mysql.connection
    cur = conn.cursor()
-   query = "SELECT CONCAT('\'', GROUP_CONCAT(column_name ORDER BY ordinal_position SEPARATOR '\', \''),'\'') AS columns FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = '" + table + "';"
+   query = "SELECT CONCAT('\\'', GROUP_CONCAT(column_name ORDER BY ordinal_position SEPARATOR '\\', \\''),'\\'') AS columns FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = '" + table + "';"
    # print(query)
    cur.execute(query)
    cols = cur.fetchone()
-   colList = cols[0].split(', ')
+   colList = str(cols[0]).split(', ')
    return colList
    
 
