@@ -69,13 +69,13 @@ def results():
          return redirect(url_for('search'))
       
       petName = request.form['searchbar']
-      state = request.form.get('location-select')
-      species = request.form.get('species-select')
-      age = request.form.get('age-select')
-      gender = request.form.get('gender-select')
-      size = request.form.get('size-select')
-      environment = request.form.get('environment-select')
-      attributes = request.form.get('attributes-select')
+      state = request.form.getlist('location-select')
+      species = request.form.getlist('species-select')
+      age = request.form.getlist('age-select')
+      gender = request.form.getlist('gender-select')
+      size = request.form.getlist('size-select')
+      environment = request.form.getlist('environment-select')
+      attributes = request.form.getlist('attributes-select')
       results = searchResults(petName, state, species, age, gender, size, environment, attributes)
 
    return render_template('results.html')
@@ -200,13 +200,79 @@ def getColNames(table):
    # print(query)
    cur.execute(query)
    cols = cur.fetchone()
-   colList = cols[0].split(', ')[1:]
+   colList = cols[0].replace('\'','').split(', ')[1:]
    cur.close()
+   
    return colList
 
 def searchResults(petName, state, species, age, gender, size, environment, attributes):
+   query = "SELECT name, link from pets, environment, attributes, petLinks, petStates WHERE pets.id = environment.id AND pets.id = attributes.id AND petLinks.id = pets.id AND petStates.id = pets.id"
+   if petName != None and len(petName) > 0 and petName[0] != "":
+      if len(petName) == 1:
+         query += " AND pets.name like \'" + petName[0] + "\'"
+      else:
+         query += " AND (pets.name like \'" + petName[0] + "\'"
+         for n in petName[1,]:
+            query += " OR pets.name like \'" + n + "\'"
+         query += ")"
+   if state != None and len(state) > 0 and state[0] != "":
+      if len(state) == 1:
+         query += " AND petStates.state like \'" + state[0] + "\'"
+      else:
+         query += " AND (petStates.state like \'" + state[0] + "\'"
+         for s in state[1,]:
+            query += " OR petStates.state like \'" + s + "\'"
+         query += ")"
+   if species != None and len(species) > 0 and species[0] != "":
+      if len(species) == 1:
+         query += " AND attributes.species like \'" + species[0] + "\'"
+      else:
+         query += " AND (attributes.species like \'" + species[0] + "\'"
+         for s in species[1,]:
+            query += " OR attributes.species like \'" + s + "\'"
+         query += ")"
+   if age != None and len(age) > 0 and age[0] != "":
+      if len(age) == 1:
+         query += " AND attributes.age like \'" + age[0] + "\'"
+      else:
+         query += " AND (attributes.age like \'" + age[0] + "\'"
+         for a in age[1,]:
+            query += " OR attributes.age like \'" + a + "\'"
+         query += ")"
+   if gender != None and len(gender) > 0 and gender[0] != "":
+      if len(gender) == 1:
+         query += " AND attributes.gender like \'" + gender[0] + "\'"
+      else:
+         query += " AND (attributes.gender like \'" + gender[0] + "\'"
+         for g in gender[1,]:
+            query += " OR attributes.gender like \'" + g + "\'"
+         query += ")"
+   if size != None and len(size) > 0 and size[0] != "":
+      if len(size) == 1:
+         query += " AND attributes.size like \'" + size[0] + "\'"
+      else:
+         query += " AND (attributes.size like \'" + size[0] + "\'"
+         for s in size[1,]:
+            query += " OR attributes.size like \'" + s + "\'"
+         query += ")"
+
+   if environment != None and len(environment) > 0 and environment[0] != "":
+      for e in environment:
+         query += " AND environment." + e + " = True"
+
+   if attributes != None and len(attributes) > 0 and attributes[0] != "":
+      for a in attributes:
+         aNew = a.replace(" ","_").replace("/","_")
+         query += " AND attributes." + aNew + " = True"
    
-   pass
+   query += ";"
+   conn = mysql.connection
+   cur = conn.cursor()
+   cur.execute(query)
+   results = cur.fetchall()
+   cur.close()
+
+   return results
    
 
 if __name__ == '__main__':
