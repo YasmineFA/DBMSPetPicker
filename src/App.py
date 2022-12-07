@@ -78,7 +78,7 @@ def results():
       attributes = request.form.getlist('attributes-select')
       results = searchResults(petName, state, species, age, gender, size, environment, attributes)
       if(request.form.get('save') == "save"):
-         params = (petName, state, species, age, gender, size, environment, attributes, results)
+         params = (petName, state, species, age, gender, size, environment, attributes)
          saveQuery(params)
    return render_template('results.html', results=results, user=session['username'])
 
@@ -285,10 +285,26 @@ def saveQuery(query):
    try:
       conn = mysql.connection
       cur = conn.cursor()
-      cur.execute("INSERT INTO user (searchQuery) VALUES ({0}) WHERE username = '{1}';".format(query, session['username']))
+      savedParams = ""
+      first = True
+      for item in query:
+         if(item != None and len(item) > 0 and item[0] != ""):
+            if(not first):
+               savedParams += ","
+            if(type(item) is str):
+               savedParams += item
+            else:
+               for i in item:
+                  savedParams += i
+            first = False
+      savedParams += ";"
+      cur.execute("SELECT searchQuery FROM user WHERE username = '{0}'".format(session['username']))
+      prevSaved = cur.fetchone()
+      prevSaved = ''.join(map(str, prevSaved))
+      q = "UPDATE user SET searchQuery = '{0}' WHERE username = '{1}';".format(prevSaved + savedParams, session['username'])
+      print(q)
+      cur.execute(q)
       conn.commit()
-      cur.execute("SELECT * FROM user WHERE username = '{0}'".format(session['username']))
-      print(cur.fetchone())
       cur.close()
       return True
    except:
