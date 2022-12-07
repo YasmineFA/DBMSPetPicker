@@ -1,7 +1,6 @@
 # from website import create_app
 from flask import Flask, render_template, redirect, url_for, request, flash, session
 from flask_mysqldb import MySQL
-import re
 
 app = Flask(__name__, template_folder='templates')
 app.config['SECRET_KEY'] = 'CS542Team1'
@@ -9,15 +8,6 @@ app.config['MYSQL_USER'] = 'pfuser'
 app.config['MYSQL_PASSWORD'] = 'pfapi2022!'
 app.config['MYSQL_DB'] = 'petfinderdb'
 app.config['MYSQL_HOST'] = '34.68.9.43'
-
-# host: 34.68.9.43
-
-# TODO: my local connection, will need to be changed
-# app.config['SECRET_KEY'] = 'CS542Team1'
-# app.config['MYSQL_HOST'] = 'localhost'
-# app.config['MYSQL_USER'] = 'yfaoua'
-# app.config['MYSQL_PASSWORD'] = 'root'
-# app.config['MYSQL_DB'] = 'petfinderDB'
 
 mysql = MySQL(app)
 
@@ -31,19 +21,14 @@ def login():
       user = request.form['fname']
       pwd = request.form['pwd']
       if request.form['authorize'] == "Login":
-         # print(user)
-         # print(pwd)
          # check username and pwd are correct
          if(auth_login(user, pwd)):
             return redirect(url_for('account',user = user))
          else:
-            # TODO: (Chris) figure out how to make the exit button clickable on the flash message
-            # should be able to just do it in one place and have it work for them all
             flash("Incorrect login, please try again", category='error')
             return redirect(url_for('index'))
 
       elif request.form['authorize'] == "Register":
-         # check username isn't taken
          if(sign_up(user, pwd)):
             flash("Account created", category='success')
             return redirect(url_for('account', user = user))
@@ -61,8 +46,6 @@ def account(user):
 
 @app.route("/results", methods=['POST'])
 def results():
-   # TODO: finish writing this
-   # TODO: (Chris) need to finish changes to html
    if request.method == 'POST':
       if(request.form['searchbar'] == None or request.form['searchbar'] == "pet name"):
          flash("nothing to search (please enter a non-default search query)", category='error')
@@ -77,20 +60,10 @@ def results():
       environment = request.form.getlist('environment-select')
       attributes = request.form.getlist('attributes-select')
       results = searchResults(petName, state, species, age, gender, size, environment, attributes)
-      if(request.form.get('save') == "save"):
+      if(request.form.get('save') == "save" and len(results) > 0):
          params = (petName, state, species, age, gender, size, environment, attributes)
          saveQuery(params)
    return render_template('results.html', results=results, user=session['username'])
-
-# @app.route("/save", methods=['POST'])
-# def save(query):
-#    if request.method == 'POST':
-#       if(saveQuery(query)):
-#          return redirect(url_for('account'))
-#       else:
-#          return redirect(url_for('search'))
-#    else:
-#          return redirect(url_for('search'))
 
 @app.route('/search', methods = ['POST', 'GET'])
 def search():
@@ -108,11 +81,6 @@ def search():
       if(search == "pet name" or search == ""):
          flash("Please enter a search query", category="error")
          return render_template('search.html', locations=state, species=species, ages=age, genders=gender, sizes=size, environments=env, user=session['username'])
-      
-      # create a sql statement with all the things selected
-      # get values of selections
-      # state, species, age, gender, size, attributes select where those cols = value
-      # env select where col = True
 
    else:
 
@@ -124,19 +92,7 @@ def logout():
     session.pop('username', None)
     return redirect(url_for('index'))
 
-# def connectDB():
-#    # this is just my local connection for mysql workbench atm
-#    # conn = mysql.connect(
-#    #       host="localhost",
-#    #       user="yfaoua",
-#    #       password="root",
-#    #       database="petfinderDB"
-#    #       )
-#    conn = mysql.connection
-#    return conn
-
 def auth_login(user, pwd):
-   # conn = connectDB()
    conn = mysql.connection
    cur = conn.cursor()
    cur.execute("SELECT * FROM user WHERE username = % s AND pwd = % s;", (user, pwd))
@@ -158,7 +114,6 @@ def sign_up(user, pwd):
       flash("Password is too short", category='error')
       return False
    # check username isn't taken
-   # conn = connectDB()
    conn = mysql.connection
    cur = conn.cursor()
    cur.execute("SELECT * FROM user WHERE username = % s AND pwd = % s;", (user, pwd))
@@ -179,7 +134,6 @@ def sign_up(user, pwd):
       return False
 
 def getSavedSearches(user):
-   # conn = connectDB()
    conn = mysql.connection
    cur = conn.cursor()
    cur.execute("SELECT searchQuery FROM user WHERE username = '{0}';".format(user))
@@ -189,13 +143,11 @@ def getSavedSearches(user):
    return queryList 
 
 def searchOptions(table, column):
-   # conn = connectDB()
    conn = mysql.connection
    cur = conn.cursor()
    cur.execute("SELECT {0} FROM {1};".format(column, table))
    result = cur.fetchall() 
    #get rid of duplicates 
-   
    resultList = []
    for entry in result:
       opt = ''.join(map(str, entry))
@@ -205,11 +157,9 @@ def searchOptions(table, column):
    return sorted(resultList)
 
 def getColNames(table):
-   # conn = connectDB()
    conn = mysql.connection
    cur = conn.cursor()
    query = "SELECT CONCAT('\\'', GROUP_CONCAT(column_name ORDER BY ordinal_position SEPARATOR '\\', \\''),'\\'') AS columns FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = '" + table + "';"
-   # print(query)
    cur.execute(query)
    cols = cur.fetchone()
    colList = cols[0].replace('\'','').split(', ')[1:]
@@ -279,7 +229,6 @@ def searchResults(petName, state, species, age, gender, size, environment, attri
 
    return results
 
-# TODO: save query to user account (make a route for it)
 def saveQuery(query):
    # save query into users table
    try:
