@@ -31,11 +31,31 @@
       <div class="content" role="main">
         <h1 class="title">Accounts page</h1>
         <div>
-          <form action="/form/submit" method="GET">
-  <input type="text" name="text" class="search" placeholder="Search here!">
+          {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+          {% if category == 'error' %}
+          <div class="alert alert-danger alert-dismissable fade show" role="alert">
+            {{message}}
+            <button type="button" class="close" data-dismiss="alert">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          {% else %}
+          <div class="alert alert-success alert-dismissable fade show" role="alert">
+            {{message}}
+            <button type="button" class="close" data-dismiss="alert">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          {% endif %}
+          {% endfor %}
+        {% endif %}
+        {% endwith %}
+          <form action="/search" method="GET">
   <input type="submit" name="submit" class="submit" value="Search">
 </form>
-          <form><button>Logout</button></form>
+          <form action="/logout"><button>Logout</button></form>
         </div>
         <div>
           <p>
@@ -53,7 +73,6 @@
           </p>
         </div>
       </div>
-      <a href="results.html">Results temp link</a>
     </div>
   </body>
 </html>

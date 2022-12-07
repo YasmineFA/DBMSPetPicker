@@ -30,36 +30,48 @@
     <div class="wrapper">
       <div>
         <span>Search Results Page</span>
-        <form action="/form/submit" method="GET">
-  <input type="text" name="text" class="search" placeholder="Search here!">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+          {% if category == 'error' %}
+          <div class="alert alert-danger alert-dismissable fade show" role="alert">
+            {{message}}
+            <button type="button" class="close" data-dismiss="alert">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          {% else %}
+          <div class="alert alert-success alert-dismissable fade show" role="alert">
+            {{message}}
+            <button type="button" class="close" data-dismiss="alert">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          {% endif %}
+          {% endfor %}
+        {% endif %}
+        {% endwith %}
+        <form action="/search" method="GET">
   <input type="submit" name="submit" class="submit" value="Search">
 </form>
       </div>
       <div>
-        <span>Query: search goes here</span>
-        <button>Save Query</button>
-        <form><button onclick="window.location.href='index.html';">Logout</button></form>
+        <span>Results:</span>
       </div>
       <div>
-        <img src="Cat.jpg">
-        <img src="Cat.jpg">
-        <img src="Cat.jpg">
-      </div>
-      <div>
-        <img src="Cat.jpg">
-        <img src="Cat.jpg">
-        <img src="Cat.jpg">
-      </div>
-      <div>
-        <img src="Cat.jpg">
-        <img src="Cat.jpg">
-        <img src="Cat.jpg">
+        <form action="/results">
+        {% for pair in results %}
+        <a href="{{pair[1]}}">{{pair[0]}}</a>
+        {% endfor %}
+        </form>
       </div>
       <div>
         <button>
           Adopt Pet
         </button>
       </div>
+      <form action="/account/{{user}}"><button type="submit" name="account" value="Account">Account</button></form>
+      <form action="/logout"><button>Logout</button></form>
     </div>
   </body>
 </html>
