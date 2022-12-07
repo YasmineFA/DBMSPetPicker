@@ -77,8 +77,20 @@ def results():
       environment = request.form.getlist('environment-select')
       attributes = request.form.getlist('attributes-select')
       results = searchResults(petName, state, species, age, gender, size, environment, attributes)
+      if(request.form.get('save') == "save"):
+         params = (petName, state, species, age, gender, size, environment, attributes, results)
+         saveQuery(params)
+   return render_template('results.html', results=results, user=session['username'])
 
-   return render_template('results.html')
+# @app.route("/save", methods=['POST'])
+# def save(query):
+#    if request.method == 'POST':
+#       if(saveQuery(query)):
+#          return redirect(url_for('account'))
+#       else:
+#          return redirect(url_for('search'))
+#    else:
+#          return redirect(url_for('search'))
 
 @app.route('/search', methods = ['POST', 'GET'])
 def search():
@@ -95,7 +107,7 @@ def search():
       search = request.form["searchbar"]
       if(search == "pet name" or search == ""):
          flash("Please enter a search query", category="error")
-         return render_template('search.html', locations=state, species=species, ages=age, genders=gender, sizes=size, environments=env)
+         return render_template('search.html', locations=state, species=species, ages=age, genders=gender, sizes=size, environments=env, user=session['username'])
       
       # create a sql statement with all the things selected
       # get values of selections
@@ -104,7 +116,7 @@ def search():
 
    else:
 
-      return render_template('search.html', locations=state, species=species, ages=age, genders=gender, sizes=size, environments=env)
+      return render_template('search.html', locations=state, species=species, ages=age, genders=gender, sizes=size, environments=env, user=session['username'])
 
 @app.route('/logout')
 def logout():
@@ -208,13 +220,7 @@ def getColNames(table):
 def searchResults(petName, state, species, age, gender, size, environment, attributes):
    query = "SELECT name, link from pets, environment, attributes, petLinks, petStates WHERE pets.id = environment.id AND pets.id = attributes.id AND petLinks.id = pets.id AND petStates.id = pets.id"
    if petName != None and len(petName) > 0 and petName[0] != "":
-      if len(petName) == 1:
-         query += " AND pets.name like \'" + petName[0] + "\'"
-      else:
-         query += " AND (pets.name like \'" + petName[0] + "\'"
-         for n in petName[1,]:
-            query += " OR pets.name like \'" + n + "\'"
-         query += ")"
+      query += " AND pets.name like \'" + petName + "\'"
    if state != None and len(state) > 0 and state[0] != "":
       if len(state) == 1:
          query += " AND petStates.state like \'" + state[0] + "\'"
@@ -264,7 +270,6 @@ def searchResults(petName, state, species, age, gender, size, environment, attri
       for a in attributes:
          aNew = a.replace(" ","_").replace("/","_")
          query += " AND attributes." + aNew + " = True"
-   
    query += ";"
    conn = mysql.connection
    cur = conn.cursor()
@@ -273,7 +278,22 @@ def searchResults(petName, state, species, age, gender, size, environment, attri
    cur.close()
 
    return results
-   
+
+# TODO: save query to user account (make a route for it)
+def saveQuery(query):
+   # save query into users table
+   try:
+      conn = mysql.connection
+      cur = conn.cursor()
+      cur.execute("INSERT INTO user (searchQuery) VALUES ({0}) WHERE username = '{1}';".format(query, session['username']))
+      conn.commit()
+      cur.execute("SELECT * FROM user WHERE username = '{0}'".format(session['username']))
+      print(cur.fetchone())
+      cur.close()
+      return True
+   except:
+      flash("failed to save query", category="error")
+      return False
 
 if __name__ == '__main__':
    app.run(debug=True)

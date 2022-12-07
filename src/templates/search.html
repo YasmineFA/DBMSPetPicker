@@ -31,6 +31,27 @@
       <div class="content" role="main">
         <h1 class="title">Search page</h1>
         <div>
+          {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+          {% if category == 'error' %}
+          <div class="alert alert-danger alert-dismissable fade show" role="alert">
+            {{message}}
+            <button type="button" class="close" data-dismiss="alert">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          {% else %}
+          <div class="alert alert-success alert-dismissable fade show" role="alert">
+            {{message}}
+            <button type="button" class="close" data-dismiss="alert">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          {% endif %}
+          {% endfor %}
+        {% endif %}
+        {% endwith %}
           <form action="/results" id="search" method="POST">
             <label for="searchbar">Search:</label>
             <input type="text" id="searchbar" name="searchbar" value="pet name"><br>
@@ -71,10 +92,13 @@
                 <option value="special_needs">Special Needs</option>
                 <option value="shots_current">Shots Current</option>
             </select>
+            <br>
+            <input type="checkbox" id="save" name="save" value="save">
+            <label for="save">Save Query</label><br>
             <button type="submit" name="searching" value="Search">Search</button>
           </form>
+          <form action="/account/{{user}}"><button type="submit" name="account" value="Account">Account</button></form>
           <form action="/logout"><button type="submit" name="logout" value="Logout">Logout</button></form>
-          
         </div>
       </div>
     </div>
